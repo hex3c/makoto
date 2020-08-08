@@ -2,21 +2,14 @@
 language: golang*/
 /*
 # Document
-
 # makoto version 1.0.0-rc2
-
 This is a tool used to extract files from a .GPK file of the game "[スクールデイズ](https://overflow.fandom.com/wiki/School_Days)" or encode files into a .GPK file
-
 此工具可用来提取GPK文件中的内容,也可以用来打包GPK文件
-
 ## Installation 安装方法
-
 1. `go get github.com/hex3c/makoto`
 2. `wget https://raw.githubusercontent.com/hex3c/makoto/master/makoto.go && go run makoto.go`
 3. download a compiled binary file from the release page 从release页面下载编译好的二进制文件
-
 ## Usage 使用方法
-
 ```
 REM extracts Event03.GPK of hq on Windows
 REM 在Windows系统上解包hq的Event03.GPK
@@ -25,13 +18,11 @@ SET GPKUnpack=1
 SET GPKKey=82EE1DB357E92CC22F547B104C9A7549
 go run makoto.go
 ```
-
 ```
 # extracts Se01.GPK of shiny on Linux
 # 在Linux系统上解包shiny的Se01.GPK
 GPKFile=Se01 GPKUnpack=1 GPKKey=F0D0BC0554AC68A9F17C8E3D640BF3AA go run makoto.go
 ```
-
 ```
 REM encodes files in .Voice00/ into Voice00.GPK for cross on Windows
 REM 在Windows系统上把Voice00文件夹打包成Voice00.GPK供cross使用
@@ -40,65 +31,45 @@ SET GPKUnpack=0
 SET GPKKey=567C1B90B6FE3FDBB60679EACC11A04F
 makoto
 ```
-
 ```
 # encodes files in .Script/ into Script.GPK for cross on Linux
 # 在Linux系统上把Script文件夹打包成Script.GPK供cross使用
 GPKFile=Script GPKUnpack=0 GPKKey=567C1B90B6FE3FDBB60679EACC11A04F makoto
 ```
-
 ## Known GPK keys 已知的GPK密钥
-
 ```
 hq=82EE1DB357E92CC22F547B104C9A7549
 shiny=F0D0BC0554AC68A9F17C8E3D640BF3AA
 cross=567C1B90B6FE3FDBB60679EACC11A04F
 ```
-
 you can submit an issue if you know the key of summer or sd(original)
-
 如果你知道summer或者原版sd的密码可以发个issue
-
 ## Copying
-
 ```
 Copyright (c) 2020 hex3c <hex3c@outlook.com>
-
 This work is free. You can redistribute it and/or modify it under the
 terms of the Do What The Fuck You Want To Public License, Version 2,
 as published by Sam Hocevar. See below for more details.
-
-
        DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
                    Version 2, December 2004 
-
 Copyright (C) 2004 Sam Hocevar <sam@hocevar.net> 
-
 Everyone is permitted to copy and distribute verbatim or modified 
 copies of this license document, and changing it is allowed as long 
 as the name is changed. 
-
            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
-
  0. You just DO WHAT THE FUCK YOU WANT TO.
 ```
-
 ## Changlog 更新记录
-
 ### v0.0.1 2020-08-05
 can extract GPK / 可以解包GPK
-
 ### v1.0.0-rc1 2020-08-07
 can repack GPK / 可以打包GPK
-
 ### v1.0.0-rc2 2020-08-08
 solves panic in some special cases / 解决了在某些特殊情况下panic的问题
-
 */
 /*
 # Code
-
 ## header & global var
 ```
 */
@@ -144,7 +115,6 @@ use FORIS.exe as header of GPK file
 /*
 ```
 open each file in the dir
-
 never use DFLT in encoding mode
 ```
 */
@@ -196,7 +166,7 @@ never use DFLT in encoding mode
 			ptr += 6
 			DecompressedIndex = append(DecompressedIndex, byte(DataPosition % 256), byte((DataPosition / 256) % 256), byte((DataPosition / 65536) % 256), byte((DataPosition / 16777216) % 256), byte(DataLength % 256), byte((DataLength / 256) % 256), byte((DataLength / 65536) % 256), byte((DataLength / 16777216) % 256))
 			ptr += 8
-			DecompressedIndex = append(DecompressedIndex, byte(20), byte(20), byte(20), byte(20), byte(0), byte(0), byte(0), byte(0), byte(1))
+			DecompressedIndex = append(DecompressedIndex, byte(32), byte(32), byte(32), byte(32), byte(0), byte(0), byte(0), byte(0), byte(1))
 			ptr += 9
 			buffer = make([]byte, 1)
 			_, err = InFile.ReadAt(buffer, 0)
@@ -221,7 +191,7 @@ never use DFLT in encoding mode
 compress the index and write to GPK file
 ```
 */
-	DecompressedIndex = append(DecompressedIndex, byte(0), byte(0), byte(0), byte(0), byte(0))
+	DecompressedIndex = append(DecompressedIndex, byte(0), byte(0), byte(0), byte(0))
 	DecompressedLength := uint(len(DecompressedIndex))
 	fmt.Printf("%d:\tDecompressed index size is:\t0x%08x\n", printfcount, DecompressedLength); printfcount++;
 	var in bytes.Buffer
@@ -278,9 +248,7 @@ func DoDecodeGPK(GPKFile string, GPKKey []uint8) (err error) {
 /*
 ```
 open the GPK file and verify
-
 must end with "STKFile0PIDX" + 4byte + "STKFile0PACKFILE"
-
 ```
 */
 	GPK, err := os.Open(GPKFile + ".GPK")
@@ -349,7 +317,6 @@ decode and decompress index
 /*
 ```
 process each file
-
 note: index structre (byte):
 - file name length = 2
 - file = 2 * (file name length)
@@ -360,7 +327,6 @@ note: index structre (byte):
 - decompressed data length = 4
 - header length = 1
 - header = (header length)
-
 ```
 */
 	var filecount uint
@@ -460,7 +426,6 @@ func PrintInfo() {
 /*
 ```
 ## main function
-
 decodes GPKKey from environment variables
 ```
 */
